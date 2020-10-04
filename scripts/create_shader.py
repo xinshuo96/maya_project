@@ -1,7 +1,6 @@
 import maya.cmds as cmds
 
 shader_name = 'projection_shader'
-projection_name = shader_name+'_node'
 place3dTexture_name = 'place3dTexture_node'
 color_file_name = 'color_file'
 place2dTexture_name = 'place2dTexture_node'
@@ -9,9 +8,16 @@ front_color_path = 'C:/Users/Yian Shi/Documents/GitHub/Maya_Projections2Textures
 
 def createNode():
     cmds.shadingNode('lambert', asShader=True, name=shader_name)
+    cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=shader_name+'SG')
+    cmds.connectAttr(shader_name+'.outColor', shader_name+'SG'+'.surfaceShader', force=True)
+    cmds.select(allDagObjects=True)
+    cmds.hyperShade(assign=shader_name)
+
     cmds.defaultNavigation(createNew=True, destination=shader_name+'.color')
+    cmds.defaultNavigation(defaultTraversal=True, destination=shader_name+'.color')
     cmds.shadingNode('projection', asUtility=True, name=projection_name)
     cmds.defaultNavigation(force=True, connectToExisting=True, source=projection_name, destination=shader_name+'.color')
+    cmds.connectAttr(projection_name+'.outColor', shader_name+'.color', force=True)
 
     # fit to bounding box
     cmds.shadingNode('place3dTexture', asUtility=True, name=place3dTexture_name)
@@ -42,12 +48,6 @@ def addImageAsColor():
     cmds.connectAttr(place2dTexture_name+'.vertexCameraOne', color_file_name+'.vertexCameraOne', force=True)
     cmds.connectAttr(place2dTexture_name+'.outUV', color_file_name+'.uv', force=True)
     cmds.connectAttr(place2dTexture_name+'.outUvFilterSize', color_file_name+'.uvFilterSize', force=True)
-    cmds.connectAttr(place2dTexture_name+'.wrapU', color_file_name+'.wrapU', force=True)
-    cmds.connectAttr(place2dTexture_name+'.wrapV', color_file_name+'.wrapV', force=True)
-    cmds.connectAttr(place2dTexture_name+'.repeatUV', color_file_name+'.repeatUV', force=True)
-    cmds.connectAttr(place2dTexture_name+'.offset', color_file_name+'.offset', force=True)
-    cmds.connectAttr(place2dTexture_name+'.rotateUV', color_file_name+'.rotateUV', force=True)
-    cmds.connectAttr(place2dTexture_name+'.wrapV', color_file_name+'.wrapV', force=True)
 
     cmds.defaultNavigation(force=True, connectToExisting=True, source=color_file_name, destination=projection_name+'.image')
     cmds.connectAttr(color_file_name+'.outColor', projection_name+'.image', force=True)
