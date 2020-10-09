@@ -1,6 +1,7 @@
 import maya.cmds as cmds
 
 shader_name = 'projection_shader'
+projection_name = "projection_node"
 place3dTexture_name = 'place3dTexture_node'
 color_file_name = 'color_file'
 place2dTexture_name = 'place2dTexture_node'
