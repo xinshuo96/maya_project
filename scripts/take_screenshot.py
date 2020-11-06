@@ -17,7 +17,7 @@ def take_screenshot(cam_name):
 	mel.eval('RenderViewWindow')
 
 	tmp_image_path = cmds.ogsRender(cam=cam_name)
-
+	print(tmp_image_path)
 	formatManager.pushRenderGlobalsForDesc('PNG')
 	cmds.refresh(cv=True, fe = "jpg", fn = "imageSnapshot")
 	# editor = 'renderView'
@@ -31,6 +31,3 @@ def take_screenshot(cam_name):
 	# formatManager.popRenderGlobals()
 
 take_screenshot("front")
-
-
-

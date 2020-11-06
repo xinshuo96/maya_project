@@ -1,11 +1,20 @@
+import maya.app.general.createImageFormats as createImageFormats
 import maya.cmds as cmds
+import maya.mel as mel
+import os
+
+
+scene_path = '/Users/sh/Project/maya_project/Sample Project/Baseman_Layered.ma'
+def openScene():
+    cmds.file(new=True, force=True, ignoreVersion=True)
+    cmds.file(scene_path, open=True)
+openScene()
 
 shader_name = 'projection_shader'
 projection_name = "projection_node"
 place3dTexture_name = 'place3dTexture_node'
 color_file_name = 'color_file'
 place2dTexture_name = 'place2dTexture_node'
-front_color_path = '/Users/sh/Project/maya_project/Sample Project/Back_Color.psd'
 
 def createNode():
     cmds.shadingNode('lambert', asShader=True, name=shader_name)
@@ -28,7 +37,7 @@ def createNode():
     cmds.setAttr(place3dTexture_name+'.scale', 11.95274, 15.46285, 2.891423, type='double3')
     cmds.setAttr(place3dTexture_name+'.translate', 0, 14.911491, 0, type='double3')
 
-def addImageAsColor():
+def addImageAsColor(front_color_path):
     cmds.shadingNode('file', asTexture=True, isColorManaged=True, name=color_file_name)
     cmds.shadingNode('place2dTexture', asUtility=True, name=place2dTexture_name)
     cmds.connectAttr(place2dTexture_name+'.coverage', color_file_name+'.coverage', force=True)
@@ -55,5 +64,38 @@ def addImageAsColor():
 
     cmds.setAttr(color_file_name+'.fileTextureName', front_color_path, type="string")
 
+
+def take_screenshot(cam_name, file_path="~/Desktop/front.png"):
+	cmds.select(allDagObjects=True)
+	cmds.setAttr("defaultRenderGlobals.imageFormat", 32)
+	#place the camera to front view and fit the entire obj inside the camera view
+	cmds.viewSet(f=True, fit= True)
+
+	#take screenshot from the selected view-point, here front
+	formatManager = createImageFormats.ImageFormats()
+
+	cmds.setAttr('hardwareRenderingGlobals.renderMode', 4)
+	cmds.setAttr('hardwareRenderingGlobals.lightingMode', 0)
+
+	mel.eval('RenderViewWindow')
+
+	tmp_image_path = cmds.ogsRender(cam=cam_name)
+	print(tmp_image_path)
+	if os.name == 'nt':
+		os.system("copy " + tmp_image_path + " " + file_path);
+	else:
+		os.system("cp " + tmp_image_path + " " + file_path);
+
+	formatManager.pushRenderGlobalsForDesc('png')
+	# cmds.refresh(cv=True, fe = "jpg", fn = "imageSnapshot")
+
+	return tmp_image_path
+
 createNode()
-addImageAsColor()
+addImageAsColor('/Users/sh/Project/maya_project/Sample Project/Front_Color.psd')
+front_img_path = take_screenshot("front", "~/Desktop/front.png")
+
+addImageAsColor('/Users/sh/Project/maya_project/Sample Project/Back_Color.psd')
+back_img_path = take_screenshot("front", "~/Desktop/back.png")
+
+
